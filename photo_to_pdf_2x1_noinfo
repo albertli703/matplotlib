@@ -24,11 +24,6 @@ rc = {"axes.spines.left" : True,
 }
 plt.rcParams.update(rc)
 
-def get_mtime(infile):
-    t = time.localtime(os.path.getmtime(infile))
-    text = str(t.tm_year) + '.' + str('0'+str(t.tm_mon))[-2:] + '.' + str('0'+str(t.tm_day))[-2:] + ', ' + str('0'+str(t.tm_hour))[-2:] + ':' + str('0'+str(t.tm_min))[-2:]
-    return text
-
 ax1 = plt.subplot(211)
 ax2 = plt.subplot(212)
 
