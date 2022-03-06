@@ -1,0 +1,81 @@
+import os
+import time
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import numpy as np
+from PyPDF2 import PdfFileReader, PdfFileWriter
+from natsort import natsorted
+
+filelist = [ f for f in os.listdir() if f[-4:].lower() == '.jpg' ]
+filelist.sort()
+
+mpl.use('pdf')
+fig = plt.figure(figsize=(8.27, 11.69), dpi=150)
+
+rc = {"axes.spines.left" : True,
+      "axes.spines.right" : True,
+      "axes.spines.bottom" : True,
+      "axes.spines.top" : True,
+      "xtick.bottom" : False,
+      "xtick.labelbottom" : False,
+      "ytick.left" : False,
+      "ytick.labelleft" : False,
+}
+plt.rcParams.update(rc)
+
+def get_mtime(infile):
+    t = time.localtime(os.path.getmtime(infile))
+    text = str(t.tm_year) + '.' + str('0'+str(t.tm_mon))[-2:] + '.' + str('0'+str(t.tm_day))[-2:] + ', ' + str('0'+str(t.tm_hour))[-2:] + ':' + str('0'+str(t.tm_min))[-2:]
+    return text
+
+ax1 = plt.subplot(211)
+ax2 = plt.subplot(212)
+
+plt.tight_layout(pad=5.0, w_pad=0.5, h_pad=2.0)
+count = 0
+save_count = 0
+start_num = int(input('start from number (default 1): '))
+for i in range(len(filelist)):
+    if i%2 == 0:
+        ax1.imshow(mpimg.imread(filelist[i]))
+        count = count + 1
+    if i%2 == 1:
+        ax2.imshow(mpimg.imread(filelist[i]))
+        count = count + 1         
+    print(str(count) + '. ' + filelist[i])
+    if count%2 == 0:
+        save_count = save_count + 1
+        plt.savefig(str(save_count) + '.pdf')
+        print('saved to ' + str(save_count) + '.pdf')
+        ax1.clear()
+        ax2.clear()
+    if i == len(filelist)-1:
+        save_count = save_count + 1
+        plt.savefig(str(save_count) + '.pdf')
+        print('saved to ' + str(save_count) + '.pdf')    
+
+try:
+    os.system('mkdir merged_pdf')
+except Exception as e:
+    print(e)
+
+filelist = [ f for f in os.listdir() if f[-4:] == '.pdf' ]
+filelist = natsorted(filelist)
+
+writer = PdfFileWriter()
+count = 1
+page_num_total = 0
+
+for i in range(len(filelist)):
+    data_row = []
+    inpdf = PdfFileReader(filelist[i])
+    page_num = inpdf.getNumPages()
+    page_num_total = page_num_total + page_num
+    print("File No.: " + str(count) + " | Pages: " + str(page_num) + " | Filename: " + filelist[i])     
+    count = count + 1
+    for j in range(page_num):
+        writer.addPage(inpdf.getPage(j))       
+
+outpdf = 'merged_pdf/merged.pdf'
+writer.write(open(outpdf, 'wb'))
